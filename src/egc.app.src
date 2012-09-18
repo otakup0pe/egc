@@ -1,0 +1,7 @@
+{application, egc,
+ [{description, "Erlang Graphite Client"},
+  {vsn, "0.1"},
+  {registered, []},
+  {applications, [sasl, kernel, stdlib]},
+  {build_dependencies, []},
+  {env, []}]}.
