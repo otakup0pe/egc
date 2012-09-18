@@ -1,0 +1,4 @@
+egc
+===
+
+Erlang Graphite Client
