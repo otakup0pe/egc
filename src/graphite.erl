@@ -67,8 +67,6 @@ terminate(_, _State) ->
 code_change(_, _, State) ->
     {ok, State}.
 
-
-
 p_send(_Stats, #state{sock = undefined, last_missing_socket_warn = LMSW} = State) ->
     p_reconnect(State#state{last_missing_socket_warn = warn_once("unable to send on missing socket", [], LMSW)});
 p_send(Stats, #state{sock = Sock} = State) ->
@@ -99,8 +97,8 @@ p_graphite_date(I) when is_integer(I) ->
 p_graphite_date({{Y, Mo, D}, {H, Mi, _S}}) when is_integer(Y), is_integer(Mo), is_integer(D), is_integer(H), is_integer(Mi) ->
     integer_to_list(H) ++ ":" ++ integer_to_list(Mi) ++ "_" ++ integer_to_list(Y) ++ integer_to_list(Mo) ++ integer_to_list(D).
 
-p_get(Key, Start, End, #state{host = Host, prefix = Pr}) ->
-    URL = "http://" ++ Host ++ "/?target=" ++ Pr ++ "." ++ Key ++
+p_get(Key, Start, End, #state{host = Host, prefix = Pr} = State) ->
+    URL = "http://" ++ Host ++ "/render?target=" ++ Pr ++ "." ++ Key ++
 	if
 	    Start == undefined ->
 		"";
@@ -112,10 +110,12 @@ p_get(Key, Start, End, #state{host = Host, prefix = Pr}) ->
 		"";
 	    true ->
 		"&until=" ++ p_graphite_date(End)
-	end,
+	end ++ "&rawData=true&format=json",
     case httpc:request(get, {URL, []}, [], []) of
 	{ok, {{_, 200, _}, _Headers, Body}} ->
-	    jiffy:decode(Body)
+	    case catch jiffy:decode(Body) of
+		B -> B
+	    end
     end.
 
 app_env(Key, Default) ->
