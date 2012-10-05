@@ -1,0 +1,14 @@
+#!/bin/bash
+#This script is meant to run in Jenkins.
+#It's behaviour is modified by environment variables at runtime
+#
+# ERLANG_PATH - (optional) if set, otp will be pulled from here
+
+if [ "$ERLANG_PATH" != "" ] ; then
+    export PATH="${ERLANG_PATH}/bin:${PATH}"
+fi
+
+echo "Building with Erlang from $(which erl)"
+
+./rebar get-deps && ./rebar update-deps || exit 1
+./rebar clean compile || exit 1
